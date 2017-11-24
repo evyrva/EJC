@@ -12,12 +12,18 @@ public class GroupSum6 {
      */
 
     public static void main(String[] args) {
-        int[] nums = {2, 4, 8};
-        System.out.println(groupSum6(0, nums, 13));
+        int[] nums = {5, 6, 2};
+        System.out.println(groupSum6(0, nums, 7));
     }
 
     public static boolean groupSum6(int start, int[] nums, int target) {
-
+        if(start < nums.length && nums[start] == 6){
+            target -= 6;
+            start++;
+        }
+        if (start >= nums.length) return (target == 0);
+        if (groupSum6(start + 1, nums, target - nums[start])) return true;
+        if (groupSum6(start + 1, nums, target)) return true;
         return false;
     }
 }

@@ -1,5 +1,7 @@
 package com.epam.javalab.codingbat.recursion_2.groupSum;
 
+import java.util.Arrays;
+
 public class GroupSum {
     /**
      * Given an array of ints, is it possible to choose a group of some of the ints, such that the group sums to
@@ -20,6 +22,7 @@ public class GroupSum {
     }
 
     public static boolean groupSum(int start, int[] nums, int target) {
+        System.out.println("srart=" + start + ", nums= " + Arrays.toString(nums) + ", target=" + target);
         // Base case: if there are no numbers left, then there is a
         // solution only if target is 0.
         if (start >= nums.length) return (target == 0);
