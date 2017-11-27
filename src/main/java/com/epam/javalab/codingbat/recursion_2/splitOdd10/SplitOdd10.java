@@ -19,6 +19,7 @@ public class SplitOdd10 {
     }
 
     public static boolean splitOdd10(int[] nums) {
+        if (nums.length == 1) return nums[0]%2 != 0;
         return helperMethod(0, nums, 0,0, 0);
     }
 
@@ -29,12 +30,13 @@ public class SplitOdd10 {
             if ((target + nums[start]) % 10 == 0){
                 return helperMethod(start+1, nums,0,1, sumInOdd);
             } else{
-                return helperMethod(start+1, nums,target+nums[start], 0, sumInOdd);
+                if (helperMethod(start+1, nums,target+nums[start], 0, sumInOdd)) return true;
+                else return helperMethod(start+1, nums,target, 0, sumInOdd + nums[start]);
             }
         } else{
             if (start >=nums.length){
-                return target % 2 != 0;
-            } else return helperMethod(start+1, nums,target+nums[start], 1, sumInOdd);
+                return sumInOdd % 2 != 0;
+            } else return helperMethod(start+1, nums,target, 1, sumInOdd + nums[start]);
         }
     }
 }
