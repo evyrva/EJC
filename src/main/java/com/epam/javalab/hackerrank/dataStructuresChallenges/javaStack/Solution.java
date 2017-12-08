@@ -15,12 +15,13 @@ class Solution {
     }
 
     static boolean checkBalance(String input) {
-        List<String> closingParanList = Arrays.asList("(", "[", "{");
-        List<String> openingParanList = Arrays.asList(")", "]", "}");
+        List<String> openingParanList = Arrays.asList("(", "[", "{");
+        List<String> closingParanList = Arrays.asList(")", "]", "}");
         Stack<String> stack = new Stack<>();
         if (input.length() == 0) return true;
         for (int i = 0; i < input.length(); i++) {
             String paran = input.substring(i, i + 1);
+//            System.out.print(paran + " ");
             if (stack.empty() && closingParanList.contains(paran)) return false;
             if (!stack.empty() && openingParanList.contains(stack.peek())
                     && closingParanList.contains(paran)) {
@@ -28,9 +29,10 @@ class Solution {
                         stack.peek().equals("[") && paran.equals("]") ||
                         stack.peek().equals("{") && paran.equals("}")){
                     stack.pop();
-                    break;
+                    continue;
                 } else return false;
             }
+
             stack.push(paran);
         }
         return stack.empty();
