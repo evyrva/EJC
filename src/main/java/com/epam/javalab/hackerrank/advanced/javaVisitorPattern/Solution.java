@@ -73,13 +73,15 @@ class TreeLeaf extends Tree {
     }
 }
 
-abstract class TreeVis
-{
+abstract class TreeVis {
     public abstract int getResult();
+
     public abstract void visitNode(TreeNode node);
+
     public abstract void visitLeaf(TreeLeaf leaf);
 
 }
+
 class SumInLeavesVisitor extends TreeVis {
     public int getResult() {
         //implement this
@@ -130,27 +132,65 @@ public class Solution {
     public static Tree solve() {
         //read the tree from STDIN and return its root as a return value of this function
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        try{
+        try {
             int n = Integer.parseInt(reader.readLine());
-            List<Integer> integerList = new ArrayList<>(n);
-            for(String s : reader.readLine().trim().split(" ")) integerList.add(Integer.parseInt(s));
-            List<Integer> colorList = new ArrayList<>(n);
-            for(String s : reader.readLine().trim().split(" ")) colorList.add(Integer.parseInt(s));
-            String line;
-            Tree root = new TreeNode(integerList.get(0), colorList.get(0) == 1 ? Color.GREEN: Color.RED, 0);
-            for (int i = 0; i < n-1; i++) {
-
+            String[] values = reader.readLine().trim().split(" ");
+//            Arrays.stream(values).forEach(i -> System.out.print(i + " "));
+            System.out.println();
+            String[] colors = reader.readLine().trim().split(" ");
+//            List<Tree> treeList = new ArrayList<>(n);
+            Tree[] trees = new Tree[n];
+            int[] parentsTree = new int[n - 1];
+            int[] childsTree = new int[n - 1];
+            for (int i = 0; i < n - 1; i++) {
+//                treeList.add(new TreeNode(Integer.parseInt(values[i]), Integer.parseInt(colors[i])==1 ? Color.GREEN: Color.RED, 0));
+                String[] chain = reader.readLine().trim().split(" ");
+                parentsTree[i] = Integer.parseInt(chain[0])-1;
+                childsTree[i] = Integer.parseInt(chain[1])-1;
             }
             reader.close();
-        }catch (IOException e){
+            trees[0] = new TreeNode(Integer.parseInt(values[0]), Integer.parseInt(colors[0]) == 1 ? Color.GREEN : Color.RED, 0);
+            for (int i = 0; i < n - 1; i++) {
+//                System.out.println("i = " + i);
+//                System.out.println(trees[parentsTree[i]-1].getValue());
+                int depth = trees[parentsTree[i]].getDepth()+1;
+                boolean isParent = false;
+                for (int j : parentsTree){
+                    if (j == childsTree[i]){
+                        isParent = true;
+                        break;
+                    }
+                }
+                if(isParent) {
+                    trees[childsTree[i]] = new TreeNode(Integer.parseInt(values[childsTree[i]]),
+                            Integer.parseInt(colors[childsTree[i]-1]) == 1 ? Color.GREEN : Color.RED, depth);
+                }else{
+                    trees[childsTree[i]] = new TreeLeaf(Integer.parseInt(values[childsTree[i]]),
+                            Integer.parseInt(colors[childsTree[i]]) == 1 ? Color.GREEN : Color.RED, depth);
+                }
+                System.out.println(isParent);
+                ((TreeNode) trees[parentsTree[i]]).addChild(trees[childsTree[i]]);
+            }
+            return trees[0];
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
-
-
+/*
+    public static void printTree(Tree tree){
+        System.out.print(tree.getValue() + " ");
+        if (tree instanceof TreeNode){
+            for (Tree t: ((TreeNode) tree).children) {
+                printTree(t);
+            }
+        }else System.out.println();
+    }
+*/
     public static void main(String[] args) {
         Tree root = solve();
+//        printTree(root);
+
         SumInLeavesVisitor vis1 = new SumInLeavesVisitor();
         ProductOfRedNodesVisitor vis2 = new ProductOfRedNodesVisitor();
         FancyVisitor vis3 = new FancyVisitor();
@@ -166,5 +206,6 @@ public class Solution {
         System.out.println(res1);
         System.out.println(res2);
         System.out.println(res3);
+
     }
 }
