@@ -83,9 +83,11 @@ abstract class TreeVis {
 }
 
 class SumInLeavesVisitor extends TreeVis {
+    private int count;
+
     public int getResult() {
         //implement this
-        return 0;
+        return count;
     }
 
     public void visitNode(TreeNode node) {
@@ -94,99 +96,128 @@ class SumInLeavesVisitor extends TreeVis {
 
     public void visitLeaf(TreeLeaf leaf) {
         //implement this
+        count += leaf.getValue();
     }
 }
 
 class ProductOfRedNodesVisitor extends TreeVis {
+    private long result = 1;
+    private final int M = 1000000007;
+
     public int getResult() {
-        //implement this
-        return 1;
+        return (int) result;
     }
 
     public void visitNode(TreeNode node) {
-        //implement this
+        if(node.getColor().equals(Color.RED)) {
+            result = (result * node.getValue()) % M;
+        }
     }
 
     public void visitLeaf(TreeLeaf leaf) {
-        //implement this
+        if(leaf.getColor().equals(Color.RED)) {
+            result = (result * leaf.getValue()) % M;
+        }
     }
 }
 
 class FancyVisitor extends TreeVis {
+    private int count;
+
     public int getResult() {
         //implement this
-        return 0;
+        return Math.abs(count);
     }
 
     public void visitNode(TreeNode node) {
         //implement this
+        if (node.getDepth() % 2 == 0) count += node.getValue();
     }
 
     public void visitLeaf(TreeLeaf leaf) {
         //implement this
+        if (leaf.getColor() == Color.GREEN) count -= leaf.getValue();
     }
 }
 
 public class Solution {
+    private static int nodeValues[];
+    private static Color nodeColors[];
+    private static Map<Integer, Set<Integer>> nodesMap = new HashMap<>();
 
     public static Tree solve() {
-        //read the tree from STDIN and return its root as a return value of this function
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            int n = Integer.parseInt(reader.readLine());
-            String[] values = reader.readLine().trim().split(" ");
-//            Arrays.stream(values).forEach(i -> System.out.print(i + " "));
-            System.out.println();
-            String[] colors = reader.readLine().trim().split(" ");
-//            List<Tree> treeList = new ArrayList<>(n);
-            Tree[] trees = new Tree[n];
-            int[] parentsTree = new int[n - 1];
-            int[] childsTree = new int[n - 1];
-            for (int i = 0; i < n - 1; i++) {
-//                treeList.add(new TreeNode(Integer.parseInt(values[i]), Integer.parseInt(colors[i])==1 ? Color.GREEN: Color.RED, 0));
-                String[] chain = reader.readLine().trim().split(" ");
-                parentsTree[i] = Integer.parseInt(chain[0])-1;
-                childsTree[i] = Integer.parseInt(chain[1])-1;
-            }
-            reader.close();
-            trees[0] = new TreeNode(Integer.parseInt(values[0]), Integer.parseInt(colors[0]) == 1 ? Color.GREEN : Color.RED, 0);
-            for (int i = 0; i < n - 1; i++) {
-//                System.out.println("i = " + i);
-//                System.out.println(trees[parentsTree[i]-1].getValue());
-                int depth = trees[parentsTree[i]].getDepth()+1;
-                boolean isParent = false;
-                for (int j : parentsTree){
-                    if (j == childsTree[i]){
-                        isParent = true;
-                        break;
-                    }
-                }
-                if(isParent) {
-                    trees[childsTree[i]] = new TreeNode(Integer.parseInt(values[childsTree[i]]),
-                            Integer.parseInt(colors[childsTree[i]-1]) == 1 ? Color.GREEN : Color.RED, depth);
-                }else{
-                    trees[childsTree[i]] = new TreeLeaf(Integer.parseInt(values[childsTree[i]]),
-                            Integer.parseInt(colors[childsTree[i]]) == 1 ? Color.GREEN : Color.RED, depth);
-                }
-                System.out.println(isParent);
-                ((TreeNode) trees[parentsTree[i]]).addChild(trees[childsTree[i]]);
-            }
-            return trees[0];
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        Scanner in = new Scanner(System.in);
+
+        int numberOfNodes = in.nextInt();
+
+        nodeValues = new int[numberOfNodes];
+        for(int index = 0; index < numberOfNodes; index++) {
+            nodeValues[index] = in.nextInt();
         }
-        return null;
-    }
-/*
-    public static void printTree(Tree tree){
-        System.out.print(tree.getValue() + " ");
-        if (tree instanceof TreeNode){
-            for (Tree t: ((TreeNode) tree).children) {
-                printTree(t);
+
+        nodeColors = new Color[numberOfNodes];
+        for(int index = 0; index < numberOfNodes; index++) {
+            nodeColors[index] = (in.nextInt() == 0) ? Color.RED : Color.GREEN;
+        }
+
+        Tree rootNode;
+        if(numberOfNodes == 1) {
+            rootNode = new TreeLeaf(nodeValues[0], nodeColors[0], 0);
+        }
+        else {
+            for(int index = 0; index < (numberOfNodes - 1); index++) {
+                int u = in.nextInt();
+                int v = in.nextInt();
+                Set<Integer> uEdges = nodesMap.get(u);
+                if(uEdges == null) {
+                    uEdges = new HashSet<>();
+                }
+                uEdges.add(v);
+                nodesMap.put(u, uEdges);
+                Set<Integer> vEdges = nodesMap.get(v);
+                if(vEdges == null) {
+                    vEdges = new HashSet<>();
+                }
+                vEdges.add(u);
+                nodesMap.put(v, vEdges);
             }
-        }else System.out.println();
+
+            rootNode = new TreeNode(nodeValues[0], nodeColors[0], 0);
+            Set<Integer> rootEdges = nodesMap.get(1);
+            Iterator<Integer> rootIterator = rootEdges.iterator();
+            while(rootIterator.hasNext()) {
+                Integer nodeIdentifier = rootIterator.next();
+                nodesMap.get(nodeIdentifier).remove(1);
+                createEdge(rootNode, nodeIdentifier);
+            }
+        }
+
+        return rootNode;
     }
-*/
+
+    private static void createEdge(Tree parentNode, Integer nodeIdentifier) {
+
+        Set<Integer> nodeEdges = nodesMap.get(nodeIdentifier);
+        boolean hasChild = false;
+        if(nodeEdges != null && !nodeEdges.isEmpty())
+            hasChild = true;
+
+        if(hasChild) {
+            TreeNode node = new TreeNode(nodeValues[nodeIdentifier - 1], nodeColors[nodeIdentifier - 1], parentNode.getDepth() + 1);
+            ((TreeNode) parentNode).addChild(node);
+            Iterator<Integer> nodeIterator = nodeEdges.iterator();
+            while(nodeIterator.hasNext()) {
+                Integer neighborNodeIdentifier = nodeIterator.next();
+                nodesMap.get(neighborNodeIdentifier).remove(nodeIdentifier);
+                createEdge(node, neighborNodeIdentifier);
+            }
+        }
+        else {
+            TreeLeaf leaf = new TreeLeaf(nodeValues[nodeIdentifier - 1], nodeColors[nodeIdentifier - 1], parentNode.getDepth() + 1);
+            ((TreeNode) parentNode).addChild(leaf);
+        }
+    }
     public static void main(String[] args) {
         Tree root = solve();
 //        printTree(root);
@@ -201,7 +232,7 @@ public class Solution {
 
         int res1 = vis1.getResult();
         int res2 = vis2.getResult();
-        int res3 = vis3.getResult();
+       int res3 = vis3.getResult();
 
         System.out.println(res1);
         System.out.println(res2);
