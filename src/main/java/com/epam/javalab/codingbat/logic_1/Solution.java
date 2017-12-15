@@ -2,6 +2,7 @@ package com.epam.javalab.codingbat.logic_1;
 
 public class Solution {
     public static void main(String[] args) {
+
     }
 
     /**
